@@ -10,3 +10,4 @@
 #include "fullSize.h"
 #include "nameext.h"
 #include "split.h"
+#include "merge.h"

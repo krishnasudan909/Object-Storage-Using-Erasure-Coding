@@ -17,13 +17,6 @@ struct FileData
 int totId = 1;
 
 
-void ec_encode(){
-
-  char splitlocation[100];
-  sprintf(splitlocation, "d1/%s.001", current->file_name);
-  FILE *f = fopen(splitlocation, "rb");
-  FILE* f2 = fopen(current->file_name, "wb" );
-}
 
 
 
@@ -75,49 +68,8 @@ void get(struct FileData** head_ref) {
     printf("The path of the file is: %s\n", current->file_path);
     printf("The size of the file is: %jd Bytes\n", current->file_size);
     printf("The type of the file is: %s\n", current->file_type);
-    /////////////////////
-    char splitlocation[100];
-    sprintf(splitlocation, "d1/%s.001", current->file_name);
-    FILE *f = fopen(splitlocation, "rb");
-    FILE* f2 = fopen(current->file_name, "wb" );
     
-    fseek(f, 0, SEEK_END);
-    long fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
-    char string[fsize];
-    fread(string, fsize, 1, f);
-    fclose(f);
-    fwrite(string, fsize, 1, f2 );
-//////////////////////
-    sprintf(splitlocation, "d2/%s.002", current->file_name);
-    f = fopen(splitlocation, "rb");
-    fseek(f, 0, SEEK_END);
-    fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    fread(string, fsize, 1, f);
-    fclose(f);  
-    fwrite(string, fsize, 1, f2 );
-/////////////////////////
-    sprintf(splitlocation, "d3/%s.003", current->file_name);
-    f = fopen(splitlocation, "rb");
-    fseek(f, 0, SEEK_END);
-    fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    fread(string, fsize, 1, f);
-    fclose(f);
-    fwrite(string, fsize, 1, f2 );
-/////////////////
-    sprintf(splitlocation, "d4/%s.004", current->file_name);
-    f = fopen(splitlocation, "rb");
-    fseek(f, 0, SEEK_END);
-    fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    fread(string, fsize, 1, f);
-    fclose(f);
-    fwrite(string, fsize, 1, f2 );
-    fclose(f2);
-
-    //////////////
+    mergeFile(current->file_name, ceil((double)current->file_size/4));
     
     return;
   }
