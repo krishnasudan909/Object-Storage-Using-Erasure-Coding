@@ -5,12 +5,10 @@ int splitFile(char *fileIn, size_t maxSize){
     char buffer[maxSize];
     char dirname[3];
     char filename[50];
-    size_t size;
-    size_t read;
-    size_t written;
 
 
     fIn = fopen(fileIn, "rb");
+    fileIn = fullName(fileIn);
     fOut = NULL;
     while (!feof(fIn)){
         sprintf(dirname, "d%d", result);
