@@ -1,0 +1,12 @@
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+#include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <math.h>
+#include "absolutePath.h"
+#include "fullSize.h"
+#include "nameext.h"
+#include "split.h"
