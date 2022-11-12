@@ -1,5 +1,5 @@
 #include "helper/helper.h"
-
+#define mapSize 5
 struct FileData
 {
     char* file_name;
@@ -12,6 +12,7 @@ struct FileData
 
 };
 
+struct FileData *hashTable[mapSize];
 int totId = 1;
 
 void put(struct FileData** head_ref) {
@@ -26,10 +27,25 @@ void put(struct FileData** head_ref) {
     new_FileData->file_path = absolutePath(path);
     new_FileData->file_size = fullSize(path);
     new_FileData->file_type = get_filename_ext(fullName(path));
-    new_FileData->UID = totId++;
+    new_FileData->UID = totId;
     new_FileData->next = NULL;
+
+  //map logic:
+    int key = (totId % mapSize);
+    if(hashTable[key]==NULL)
+      hashTable[key] = new_FileData;
+    else{
+      //adding to the start to save time
+      struct FileData *temp = hashTable[key];
+      new_FileData->next = temp;
+      hashTable[key]=new_FileData;
+    }
+
     printf("The file has been split to %d parts with maximum size as %lf\n", splitFile(path, ceil((double)fullSize(path)/4)), ceil((double)fullSize(path)/4));
     printf("The file has been added with ID %jd\n", new_FileData->UID);
+
+    totId++;
+
     if (*head_ref == NULL) {
     *head_ref = new_FileData;
     return;
@@ -87,6 +103,9 @@ void list(struct FileData* FileData) {
 
 int main(int argc, char const *argv[])
 {
+    //INITIALIZING MAP ARRAY TO NULL
+    for(int i=0; i<mapSize; i++) hashTable[i]=NULL;
+
     struct FileData* head = NULL;
     // printf("The size is: %jd Bytes\n", fullSize("d1/sample-15s.mp3.001"));
     // printf("The absolute path is: %s \n", absolutePath("d1/sample-15s.mp3.001"));
