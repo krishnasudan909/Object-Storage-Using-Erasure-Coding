@@ -2,7 +2,7 @@ int splitFile(char *fileIn, size_t maxSize){
     int result = 1;
     FILE *fIn;
     FILE *fOut;
-    char buffer[maxSize];
+    char buffer[maxSize+1];
     char dirname[3];
     char filename[50];
 
@@ -10,7 +10,7 @@ int splitFile(char *fileIn, size_t maxSize){
     fIn = fopen(fileIn, "rb");
     fileIn = fullName(fileIn);
     fOut = NULL;
-    while (!feof(fIn)){
+    for(int i=0; i<4; i++){
         sprintf(dirname, "d%d", result);
         mkdir(dirname,0777);
         sprintf(filename, "%s/%s.%03d", dirname, fileIn, result);
@@ -21,5 +21,5 @@ int splitFile(char *fileIn, size_t maxSize){
         fclose(fOut);
         result++;
     }
-    return result;
+    return result-1;
 }
