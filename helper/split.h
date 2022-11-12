@@ -2,7 +2,7 @@ int splitFile(char *fileIn, size_t maxSize){
     int result = 1;
     FILE *fIn;
     FILE *fOut;
-    char buffer[maxSize+1];
+    char buffer[4][maxSize+1];
     char dirname[3];
     char filename[50];
 
@@ -10,16 +10,26 @@ int splitFile(char *fileIn, size_t maxSize){
     fIn = fopen(fileIn, "rb");
     fileIn = fullName(fileIn);
     fOut = NULL;
-    for(int i=0; i<4; i++){
+    int bufferIndex = 0;
+    while(bufferIndex<4){
         sprintf(dirname, "d%d", result);
         mkdir(dirname,0777);
         sprintf(filename, "%s/%s.%03d", dirname, fileIn, result);
         fOut = fopen(filename, "wb");
 
-        fread(buffer, maxSize, 1, fIn);
-        fwrite(buffer, maxSize, 1, fOut );
+        fread(buffer[bufferIndex], maxSize, 1, fIn);
+        buffer[bufferIndex][maxSize-1] = '\0';
+        fwrite(buffer[bufferIndex], maxSize, 1, fOut );
+        bufferIndex += 1;
+        
         fclose(fOut);
         result++;
     }
+
+    fclose(fIn);
+    printf("%s\n",buffer[0]);
+    printf("%s\n",buffer[1]);
+    printf("%s\n",buffer[2]);
+    printf("%s\n",buffer[3]);
     return result-1;
 }

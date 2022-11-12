@@ -1,5 +1,3 @@
-
-
 #include "helper/helper.h"
 
 struct FileData
@@ -15,10 +13,6 @@ struct FileData
 };
 
 int totId = 1;
-
-
-
-
 
 void put(struct FileData** head_ref) {
   struct FileData* new_FileData = (struct FileData*)malloc(sizeof(struct FileData));
