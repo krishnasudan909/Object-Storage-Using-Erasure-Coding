@@ -30,21 +30,8 @@ void put(struct FileData** head_ref) {
     new_FileData->UID = totId;
     new_FileData->next = NULL;
 
-  //map logic:
-    int key = (totId % mapSize);
-    if(hashTable[key]==NULL)
-      hashTable[key] = new_FileData;
-    else{
-      //adding to the start to save time
-      struct FileData *temp = hashTable[key];
-      new_FileData->next = temp;
-      hashTable[key]=new_FileData;
-    }
-
     printf("The file has been split to %d parts with maximum size as %lf\n", splitFile(path, ceil((double)fullSize(path)/4)), ceil((double)fullSize(path)/4));
     printf("The file has been added with ID %jd\n", new_FileData->UID);
-
-    totId++;
 
     if (*head_ref == NULL) {
     *head_ref = new_FileData;
@@ -66,12 +53,11 @@ void put(struct FileData** head_ref) {
 }
 
 
-void get(struct FileData** head_ref) {
-  struct FileData* current = *head_ref;
+void get() {
   size_t key;
-//   printf("Enter the ID: \n");
   scanf("%zd", &key);
-
+  int hashIndex = key%5;
+  struct FileData* current = hashTable[hashIndex];
   while (current != NULL) {
   if (current->UID == key){
     printf("The name of the file is: %s\n", current->file_name);
@@ -89,14 +75,23 @@ void get(struct FileData** head_ref) {
   return ;
 }
 
-void list(struct FileData* FileData) {
-  while (FileData != NULL) {
-    printf("The name of the file is: %s\n", FileData->file_name);
-    printf("The path of the file is: %s\n", FileData->file_path);
-    printf("The size of the file is: %jd Bytes\n", FileData->file_size);
-    printf("The type of the file is: %s\n", FileData->file_type);
+void list() {
+  int hashIndex = 0;
+  while (hashIndex<5) {
+    if(hashTable[hashIndex]==NULL) printf("No files at hashIndex %d\n", hashIndex);
+    else{
+    printf("Files at HashIndex %d are: \n", hashIndex);
+    struct FileData* head = hashTable[hashIndex];
+    while(head!=NULL){
+    printf("The name of the file is: %s\n", head->file_name);
+    printf("The path of the file is: %s\n", head->file_path);
+    printf("The size of the file is: %jd Bytes\n", head->file_size);
+    printf("The type of the file is: %s\n", head->file_type);
     printf("---------------------------\n");
-  FileData = FileData->next;
+    head = head->next;
+    }
+    }
+    hashIndex++;
   }
 }
 
@@ -106,7 +101,6 @@ int main(int argc, char const *argv[])
     //INITIALIZING MAP ARRAY TO NULL
     for(int i=0; i<mapSize; i++) hashTable[i]=NULL;
 
-    struct FileData* head = NULL;
     // printf("The size is: %jd Bytes\n", fullSize("d1/sample-15s.mp3.001"));
     // printf("The absolute path is: %s \n", absolutePath("d1/sample-15s.mp3.001"));
     // printf("The name of the file is: %s \n", fullName(absolutePath("file.txt")));
@@ -122,15 +116,17 @@ int main(int argc, char const *argv[])
         scanf("%s", &command);
         if (strcmp(command, "put") == 0)
         {
-            put(&head);
+            int key = (totId % mapSize);
+            put(&hashTable[key]);
+            totId++;
         }
         else if (strcmp(command, "get") == 0)
         {
-            get(&head);
+            get();
         }
         else if (strcmp(command, "list") == 0)
         {
-            list(head);
+            list();
         }
         else
         {
