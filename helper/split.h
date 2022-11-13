@@ -18,8 +18,9 @@ int splitFile(char *fileIn, size_t maxSize){
         fOut = fopen(filename, "wb");
 
         fread(buffer[bufferIndex], maxSize, 1, fIn);
-        buffer[bufferIndex][maxSize-1] = '\0';
+        
         fwrite(buffer[bufferIndex], maxSize, 1, fOut );
+        buffer[bufferIndex][maxSize-1] = '\0';
         bufferIndex += 1;
         
         fclose(fOut);

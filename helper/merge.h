@@ -3,8 +3,11 @@ void mergeFile(char *filename, size_t splitSize){
     FILE *fIn;
     FILE *fOut;
     char buffer[splitSize];
+    char resultfilelocation[100];
+    mkdir("result",0777);
+    sprintf(resultfilelocation, "result/%s", filename);
 
-    fOut = fopen(filename, "wb");
+    fOut = fopen(resultfilelocation, "wb");
     for (int i = 1; i <= 4; i++)
     {
         sprintf(splitlocation, "d%d/%s.00%d", i, filename, i);
