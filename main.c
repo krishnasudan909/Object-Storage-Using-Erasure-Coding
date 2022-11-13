@@ -60,6 +60,7 @@ void get() {
   struct FileData* current = hashTable[hashIndex];
   while (current != NULL) {
   if (current->UID == key){
+    printf("The file is present at %d index of the hash table\n",hashIndex);
     printf("The name of the file is: %s\n", current->file_name);
     printf("The path of the file is: %s\n", current->file_path);
     printf("The size of the file is: %jd Bytes\n", current->file_size);
@@ -80,7 +81,7 @@ void list() {
   while (hashIndex<5) {
     if(hashTable[hashIndex]==NULL) printf("No files at hashIndex %d\n", hashIndex);
     else{
-    printf("Files at HashIndex %d are: \n", hashIndex);
+    printf("Files at HashIndex %d are --> \n", hashIndex);
     struct FileData* head = hashTable[hashIndex];
     while(head!=NULL){
     printf("The name of the file is: %s\n", head->file_name);
@@ -117,6 +118,7 @@ int main(int argc, char const *argv[])
         if (strcmp(command, "put") == 0)
         {
             int key = (totId % mapSize);
+            printf("File added in the %d index of the hash table\n",key);
             put(&hashTable[key]);
             totId++;
         }
