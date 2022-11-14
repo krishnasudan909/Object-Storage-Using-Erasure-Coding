@@ -28,9 +28,9 @@ int splitFile(char *fileIn, size_t maxSize){
     }
 
     fclose(fIn);
-    printf("%s\n",buffer[0]);
-    printf("%s\n",buffer[1]);
-    printf("%s\n",buffer[2]);
-    printf("%s\n",buffer[3]);
+    // printf("%s\n",buffer[0]);
+    // printf("%s\n",buffer[1]);
+    // printf("%s\n",buffer[2]);
+    // printf("%s\n",buffer[3]);
     return result-1;
 }
