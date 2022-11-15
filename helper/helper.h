@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
-#include "absolutePath.h"
-#include "fullSize.h"
-#include "nameext.h"
-#include "split.h"
-#include "merge.h"
+#include "absolutePath.c"
+#include "fullSize.c"
+#include "nameext.c"
+#include "split.c"
+#include "merge.c"
