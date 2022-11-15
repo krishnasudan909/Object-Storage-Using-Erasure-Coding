@@ -1,5 +1,5 @@
 #include <stdio.h>
-int splitFile(char *fileIn, size_t maxSize, char buffer[4][maxSize+1]){
+int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[4]){
     int result = 1;
     FILE *fIn;
     FILE *fOut;

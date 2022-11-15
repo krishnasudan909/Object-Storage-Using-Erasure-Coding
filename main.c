@@ -40,14 +40,29 @@ void put(struct FileData** head_ref) {
 
 
     size_t maxSize = ceil((double)fullSize(path)/4);
-    char databuffs[4][maxSize+1];
-    char paritybuffs[3][maxSize+1];
+    unsigned char *databuffs[4];
+    
+    for (size_t i = 0; i < 4; i++)
+    {
+      databuffs[i] = (char*)malloc(maxSize * sizeof(char));
+    }
+    
+    unsigned char* paritybuffs[3];
+    for (size_t i = 0; i < 4; i++)
+    {
+      paritybuffs[i] = (char*)malloc(maxSize * sizeof(char));
+    }
+
     printf("The file has been split to %d parts with maximum size as %zu\n", splitFile(path, maxSize, databuffs), maxSize);
     printf("%s\n",databuffs[0]);
     printf("%s\n",databuffs[1]);
     printf("%s\n",databuffs[2]);
     printf("%s\n",databuffs[3]);
-    // ec_encode_data_base(maxSize, 4, 3, g_tbls, databuffs, paritybuffs);
+    ec_encode_data_base(maxSize, 4, 3, g_tbls, databuffs, paritybuffs);
+    printf("The parity bits: \n");
+    printf("%s\n", paritybuffs[0]);
+    printf("%s\n", paritybuffs[1]);
+    printf("%s\n", paritybuffs[2]);
     printf("The file has been added with ID %jd\n", new_FileData->UID);
 
     if (*head_ref == NULL) {
