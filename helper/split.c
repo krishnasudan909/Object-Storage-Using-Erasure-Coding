@@ -1,8 +1,9 @@
-int splitFile(char *fileIn, size_t maxSize){
+#include <stdio.h>
+int splitFile(char *fileIn, size_t maxSize, char buffer[4][maxSize+1]){
     int result = 1;
     FILE *fIn;
     FILE *fOut;
-    char buffer[4][maxSize+1];
+    
     char dirname[3];
     char filename[50];
 
@@ -28,9 +29,5 @@ int splitFile(char *fileIn, size_t maxSize){
     }
 
     fclose(fIn);
-    // printf("%s\n",buffer[0]);
-    // printf("%s\n",buffer[1]);
-    // printf("%s\n",buffer[2]);
-    // printf("%s\n",buffer[3]);
     return result-1;
 }

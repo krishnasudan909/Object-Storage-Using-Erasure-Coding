@@ -1,4 +1,5 @@
 #include "helper/helper.h"
+#include "erasure_code.h"
 #define mapSize 5
 struct FileData
 {
@@ -11,7 +12,14 @@ struct FileData
     struct FileData* next;
 
 };
+///////////
+int d = 4;
+int p = 3;
+int m = 7;
 
+unsigned char gen[7*4];
+char g_tbls[3 * 4 * 32];
+//////////
 struct FileData *hashTable[mapSize];
 int totId = 1;
 
@@ -30,7 +38,16 @@ void put(struct FileData** head_ref) {
     new_FileData->UID = totId;
     new_FileData->next = NULL;
 
-    printf("The file has been split to %d parts with maximum size as %lf\n", splitFile(path, ceil((double)fullSize(path)/4)), ceil((double)fullSize(path)/4));
+
+    size_t maxSize = ceil((double)fullSize(path)/4);
+    char databuffs[4][maxSize+1];
+    char paritybuffs[3][maxSize+1];
+    printf("The file has been split to %d parts with maximum size as %zu\n", splitFile(path, maxSize, databuffs), maxSize);
+    printf("%s\n",databuffs[0]);
+    printf("%s\n",databuffs[1]);
+    printf("%s\n",databuffs[2]);
+    printf("%s\n",databuffs[3]);
+    // ec_encode_data_base(maxSize, 4, 3, g_tbls, databuffs, paritybuffs);
     printf("The file has been added with ID %jd\n", new_FileData->UID);
 
     if (*head_ref == NULL) {
@@ -99,13 +116,11 @@ void list() {
 
 int main(int argc, char const *argv[])
 {
+
+  gf_gen_rs_matrix(gen, 7, 4);
+  ec_init_tables(4, 3, &gen[4*4], g_tbls);
     //INITIALIZING MAP ARRAY TO NULL
     for(int i=0; i<mapSize; i++) hashTable[i]=NULL;
-
-    // printf("The size is: %jd Bytes\n", fullSize("d1/sample-15s.mp3.001"));
-    // printf("The absolute path is: %s \n", absolutePath("d1/sample-15s.mp3.001"));
-    // printf("The name of the file is: %s \n", fullName(absolutePath("file.txt")));
-    // printf("The extension of the file is: %s\n", get_filename_ext(fullName("file.txt")));
     int input;
     int flag = 1;
     char command[4];
