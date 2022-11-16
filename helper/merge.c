@@ -1,3 +1,5 @@
+#include "helper.h"
+
 void mergeFile(char *filename, size_t splitSize){
     char splitlocation[100];
     FILE *fIn;

@@ -1,5 +1,4 @@
-
-
+#include "helper.h"
 
 off_t fullSize(const char *filename) {
     struct stat st;

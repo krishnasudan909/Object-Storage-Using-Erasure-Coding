@@ -1,6 +1,4 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<libgen.h>
+#include "helper.h"
 
 char *fullName(const char *path){
     char* ts1 = strdup(path);

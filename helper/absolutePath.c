@@ -1,3 +1,5 @@
+#include "helper.h"
+
 char *absolutePath(const char *filename){
     char *path = realpath(filename, NULL);
     if (path == NULL)
