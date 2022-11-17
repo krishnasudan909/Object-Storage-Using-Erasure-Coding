@@ -83,7 +83,7 @@ int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[4]){
     int bufferIndex = 0;
     while(bufferIndex<4){
         sprintf(dirname, "d%d", result);
-        mkdir(dirname,0777);
+        if(access(dirname, F_OK) == 0){
         sprintf(filename, "%s/%s.%03d", dirname, fileIn, result);
         fOut = fopen(filename, "wb");
 
@@ -94,9 +94,42 @@ int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[4]){
         bufferIndex += 1;
         
         fclose(fOut);
+        
         result++;
+        }
+        else
+        {
+            printf("The directory %s does not exist \nCreating...\n", dirname);
+            mkdir(dirname,0777);
+        }
+        
     }
 
     fclose(fIn);
     return result-1;
+}
+
+//Put Parity
+void putParity(char *fileIn, size_t maxSize, unsigned char *buffer[3]){
+    int index = 1;
+    char dirname[3];
+    char filename[50];
+    FILE *fOut;
+    while (index <= 3)
+    {
+        sprintf(dirname, "p%d", index);
+        if(access(dirname, F_OK) == 0){
+            sprintf(filename, "%s/%s.%03d", dirname, fileIn, index);
+            fOut = fopen(filename, "wb");
+            fwrite(buffer[index - 1], maxSize, 1, fOut );
+            fclose(fOut);
+            index++;
+        }
+        else
+        {
+            printf("The directory %s does not exist \nCreating...\n", dirname);
+            mkdir(dirname,0777);
+        }
+    }
+    
 }

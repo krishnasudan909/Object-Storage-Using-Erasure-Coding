@@ -19,3 +19,5 @@ char *fullName(const char *path);
 const char *get_filename_ext(const char *filename);
 
 int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[4]);
+
+void putParity(char *fileIn, size_t maxSize, unsigned char *buffer[3]);
