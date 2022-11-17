@@ -1,6 +1,8 @@
 #include "helper/helper.h"
 #include "erasure_code.h"
 #define mapSize 5
+
+//Structure of Filedata
 struct FileData
 {
     char* file_name;
@@ -12,6 +14,7 @@ struct FileData
     struct FileData* next;
 
 };
+
 ///////////
 int d = 4;
 int p = 3;
@@ -19,17 +22,19 @@ int m = 7;
 
 unsigned char gen[7*4];
 char g_tbls[3 * 4 * 32];
-//////////
+
+
+// Global Hashable with it's starting id
 struct FileData *hashTable[mapSize];
 int totId = 1;
 
-void put(struct FileData** head_ref) {
+//This function will put the file in hash table and also in different directories after splitting
+void put(int hashIndex) {
   struct FileData* new_FileData = (struct FileData*)malloc(sizeof(struct FileData));
-  struct FileData* last = *head_ref; /* used in step 5*/
 
   char path[100];
-//   printf("Enter file path: \n");
   scanf("%s", &path);
+
   if (access(path, F_OK) == 0){
     new_FileData->file_name = fullName(path);
     new_FileData->file_path = absolutePath(path);
@@ -63,24 +68,15 @@ void put(struct FileData** head_ref) {
     printf("%s\n", paritybuffs[0]);
     printf("%s\n", paritybuffs[1]);
     printf("%s\n", paritybuffs[2]);
-    printf("The file has been added with ID %jd\n", new_FileData->UID);
 
-    if (*head_ref == NULL) {
-    *head_ref = new_FileData;
-    return;
-    }
-
-    while (last->next != NULL) last = last->next;
-
-    last->next = new_FileData;
-
-    
+      //Adding new file in the start in O(1) Time complexity
+      new_FileData->next = hashTable[hashIndex];
+      hashTable[hashIndex] = new_FileData;
   }
   else
   {
     printf("The file is not accesible\n");
   }
-  
   return;
 }
 
@@ -134,8 +130,10 @@ int main(int argc, char const *argv[])
 
   gf_gen_rs_matrix(gen, 7, 4);
   ec_init_tables(4, 3, &gen[4*4], g_tbls);
+
     //INITIALIZING MAP ARRAY TO NULL
     for(int i=0; i<mapSize; i++) hashTable[i]=NULL;
+
     int input;
     int flag = 1;
     char command[4];
@@ -148,8 +146,8 @@ int main(int argc, char const *argv[])
         if (strcmp(command, "put") == 0)
         {
             int key = (totId % mapSize);
-            printf("File added in the %d index of the hash table\n",key);
-            put(&hashTable[key]);
+            printf("File added in the %d index of the hash table with ID %d\n",key, totId);
+            put(key);
             totId++;
         }
         else if (strcmp(command, "get") == 0)
@@ -159,6 +157,9 @@ int main(int argc, char const *argv[])
         else if (strcmp(command, "list") == 0)
         {
             list();
+        }
+        else if (strcmp(command, "exit") == 0){
+          exit(0);
         }
         else
         {
