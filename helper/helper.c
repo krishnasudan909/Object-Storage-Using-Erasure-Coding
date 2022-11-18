@@ -29,13 +29,13 @@ off_t fullSize(const char *filename) {
 }
 
 //Merge file
-void mergeFile(char *filename, size_t splitSize){
+int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[4], unsigned char *parity[3]){
     char splitlocation[100];
     FILE *fIn;
     FILE *fOut;
-    char buffer[splitSize];
+    int boolflag = 0;
     char resultfilelocation[100];
-    mkdir("result",0777);
+    char dirname[3];
     sprintf(resultfilelocation, "result/%s", filename);
 
     fOut = fopen(resultfilelocation, "wb");
@@ -43,14 +43,47 @@ void mergeFile(char *filename, size_t splitSize){
     {
         sprintf(splitlocation, "d%d/%s.00%d", i, filename, i);
         // printf("%s\n", splitlocation);
-        fIn = fopen(splitlocation, "rb");
-        fread(buffer, splitSize, 1, fIn);
-        // printf("%s\n", buffer);
-        fwrite(buffer, splitSize, 1, fOut);
-        fclose(fIn);
-        fIn = NULL;
+        if(access(splitlocation, F_OK) == 0){
+            fIn = fopen(splitlocation, "rb");
+            fread(buffer[i-1], splitSize, 1, fIn);
+            // printf("%s\n", buffer);
+            fwrite(buffer[i-1], splitSize, 1, fOut);
+            fclose(fIn);
+            fIn = NULL;
+        }
+        else
+        {
+            printf("The split at %s has been deleted\n", splitlocation);
+            boolflag++;
+        }
+        
     }
+    for (int i = 1; i <= 3; i++)
+    {
+        sprintf(dirname, "p%d", i);
+        if(access(dirname, F_OK) == 0){
+            sprintf(splitlocation, "%s/%s.%03d", dirname, filename, i);
+            fIn = fopen(splitlocation, "rb");
+            fread(parity[i-1], splitSize, 1, fIn);
+            fclose(fIn);
+            fIn = NULL;
+        }
+        else
+        {
+            printf("The parity folder at %s is deleted.\nAborting..", dirname);
+            return -2;
+        }
+    }
+    
     fclose(fOut);
+    if (boolflag > 0)
+    {
+        remove(resultfilelocation);
+        return boolflag;
+    }
+
+    return 0;
+    
 }
 
 //Name extension
@@ -90,6 +123,7 @@ int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[4]){
         fread(buffer[bufferIndex], maxSize, 1, fIn);
         
         fwrite(buffer[bufferIndex], maxSize, 1, fOut );
+        printf("Successfully put in the %s drectory\n", dirname);
         buffer[bufferIndex][maxSize-1] = '\0';
         bufferIndex += 1;
         
@@ -122,6 +156,7 @@ void putParity(char *fileIn, size_t maxSize, unsigned char *buffer[3]){
             sprintf(filename, "%s/%s.%03d", dirname, fileIn, index);
             fOut = fopen(filename, "wb");
             fwrite(buffer[index - 1], maxSize, 1, fOut );
+            printf("Successfully put in the %s drectory\n", dirname);
             fclose(fOut);
             index++;
         }

@@ -12,7 +12,7 @@ char *absolutePath(const char *filename);
 
 off_t fullSize(const char *filename);
 
-void mergeFile(char *filename, size_t splitSize);
+int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[4], unsigned char *parity[3]);
 
 char *fullName(const char *path);
 

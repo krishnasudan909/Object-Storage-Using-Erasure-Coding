@@ -63,7 +63,7 @@ void put(int hashIndex) {
     ec_encode_data_base(maxSize, 4, 3, g_tbls, databuffs, paritybuffs);
 
     putParity(fullName(path), maxSize, paritybuffs);
-    printf("The parities has been put into respective folders\n");
+    printf("The parities have been put into respective folders\n");
   
 
       //Adding new file in the start in O(1) Time complexity
@@ -90,8 +90,48 @@ void get() {
     printf("The path of the file is: %s\n", current->file_path);
     printf("The size of the file is: %jd Bytes\n", current->file_size);
     printf("The type of the file is: %s\n", current->file_type);
+
+
+    size_t maxSize = ceil((double)current->file_size/4);
+    unsigned char *databuffs[4];
     
-    mergeFile(current->file_name, ceil((double)current->file_size/4));
+    for (size_t i = 0; i < 4; i++)
+    {
+      databuffs[i] = (char*)malloc(maxSize * sizeof(char));
+    }
+    
+    unsigned char* paritybuffs[3];
+    for (size_t i = 0; i < 4; i++)
+    {
+      paritybuffs[i] = (char*)malloc(maxSize * sizeof(char));
+    }
+
+    int mergeResult = mergeFile(current->file_name, maxSize, databuffs, paritybuffs);
+    
+    if(mergeResult > 0){
+      printf("The recovery code starts\n");
+      ec_encode_data_base(maxSize, 4, 3, g_tbls, databuffs, paritybuffs);
+      printf("%s", databuffs[0]);
+      printf("%s", databuffs[1]);
+      printf("%s", databuffs[2]);
+      printf("%s", databuffs[3]);
+
+      printf("%s", paritybuffs[0]);
+      printf("%s", paritybuffs[1]);
+      printf("%s", paritybuffs[2]);
+    }
+    else if (mergeResult == 0)
+    {
+      printf("%s", databuffs[0]);
+      printf("%s", databuffs[1]);
+      printf("%s", databuffs[2]);
+      printf("%s", databuffs[3]);
+
+      printf("%s", paritybuffs[0]);
+      printf("%s", paritybuffs[1]);
+      printf("%s", paritybuffs[2]);
+    }
+    
     
     return;
   }
@@ -124,6 +164,22 @@ void list() {
 
 int main(int argc, char const *argv[])
 {
+
+  char dirname[3];
+  for (int i = 1; i <= 4; i++)
+  {
+    sprintf(dirname, "d%d", i);
+    mkdir(dirname, 0777);
+  }
+
+  for (int i = 1; i <= 3; i++)
+  {
+    sprintf(dirname, "p%d", i);
+    mkdir(dirname, 0777);
+  }
+  mkdir("result",0777);
+
+  
 
   gf_gen_rs_matrix(gen, 7, 4);
   ec_init_tables(4, 3, &gen[4*4], g_tbls);
