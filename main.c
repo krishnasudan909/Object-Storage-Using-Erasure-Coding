@@ -106,31 +106,56 @@ void get() {
       paritybuffs[i] = (char*)malloc(maxSize * sizeof(char));
     }
 
-    int mergeResult = mergeFile(current->file_name, maxSize, databuffs, paritybuffs);
+    unsigned char buffererror[3];
+
+    int mergeResult = mergeFile(current->file_name, maxSize, databuffs, paritybuffs, buffererror);
     
     if(mergeResult > 0){
       printf("The recovery code starts\n");
-      ec_encode_data_base(maxSize, 4, 3, g_tbls, databuffs, paritybuffs);
-      printf("%s", databuffs[0]);
-      printf("%s", databuffs[1]);
-      printf("%s", databuffs[2]);
-      printf("%s", databuffs[3]);
+      unsigned char genb[7*4];
+      unsigned char genc[7*4];
+      unsigned char gend[7*4];
+      int i, j, r;
 
-      printf("%s", paritybuffs[0]);
-      printf("%s", paritybuffs[1]);
-      printf("%s", paritybuffs[2]);
-    }
-    else if (mergeResult == 0)
-    {
-      printf("%s", databuffs[0]);
-      printf("%s", databuffs[1]);
-      printf("%s", databuffs[2]);
-      printf("%s", databuffs[3]);
+      for (i = 0, r = 0; i < 4; i++, r++){
+        for (j = 0; j < 4; j++)
+          genb[4 * i + j] = gen[4 * r + j];
+      }
 
-      printf("%s", paritybuffs[0]);
-      printf("%s", paritybuffs[1]);
-      printf("%s", paritybuffs[2]);
+      if (gf_invert_matrix(genb, gend, 4) < 0)
+        printf("BD BAD\n");
+
+      // for (i = 0; i < mergeResult; i++)
+		  //   databuffs[buffererror[i]] = 1;
+
+      for (i = 0; i < 3; i++)
+		  for (j = 0; j < 4; j++)
+			  genc[4 * i + j] = gend[4 * buffererror[i] + j];
+
+      
+      ec_init_tables(4, mergeResult, genc, g_tbls);
+      
+      ec_encode_data_base(maxSize, 4, mergeResult, g_tbls, databuffs, paritybuffs);
+      printf("%s\n", databuffs[0]);
+      printf("%s\n", databuffs[1]);
+      printf("%s\n", databuffs[2]);
+      printf("%s\n", databuffs[3]);
+      printf("\nThe parity starts here: \n");
+      printf("%s\n", paritybuffs[0]);
+      printf("%s\n", paritybuffs[1]);
+      printf("%s\n", paritybuffs[2]);
     }
+    // else if (mergeResult == 0)
+    // {
+    //   printf("%s", databuffs[0]);
+    //   printf("%s", databuffs[1]);
+    //   printf("%s", databuffs[2]);
+    //   printf("%s", databuffs[3]);
+
+    //   printf("%s", paritybuffs[0]);
+    //   printf("%s", paritybuffs[1]);
+    //   printf("%s", paritybuffs[2]);
+    // }
     
     
     return;

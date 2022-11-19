@@ -29,7 +29,7 @@ off_t fullSize(const char *filename) {
 }
 
 //Merge file
-int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[4], unsigned char *parity[3]){
+int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[4], unsigned char *parity[3], unsigned char buffererror[3]){
     char splitlocation[100];
     FILE *fIn;
     FILE *fOut;
@@ -54,6 +54,7 @@ int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[4], unsign
         else
         {
             printf("The split at %s has been deleted\n", splitlocation);
+            buffererror[boolflag] = i-1;
             boolflag++;
         }
         
