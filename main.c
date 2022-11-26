@@ -16,12 +16,12 @@ struct FileData
 };
 
 ///////////
-int d = 4;
+int d = 8;
 int p = 3;
-int m = 7;
+int m = 11;
 
-unsigned char gen[7*4];
-char g_tbls[3 * 4 * 32];
+unsigned char gen[11*8];
+char g_tbls[3 * 8 * 32];
 
 
 // Global Hashable with it's starting id
@@ -44,10 +44,10 @@ void put(int hashIndex) {
     new_FileData->next = NULL;
 
 
-    size_t maxSize = ceil((double)fullSize(path)/4);
-    unsigned char *databuffs[4];
+    size_t maxSize = ceil((double)fullSize(path)/8);
+    unsigned char *databuffs[8];
     
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < 8; i++)
     {
       databuffs[i] = (char*)malloc(maxSize * sizeof(char));
     }
@@ -92,10 +92,10 @@ void get() {
     printf("The type of the file is: %s\n", current->file_type);
 
 
-    size_t maxSize = ceil((double)current->file_size/4);
-    unsigned char *databuffs[4];
+    size_t maxSize = ceil((double)current->file_size/8);
+    unsigned char *databuffs[8];
     
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < 8; i++)
     {
       databuffs[i] = (char*)malloc(maxSize * sizeof(char));
     }

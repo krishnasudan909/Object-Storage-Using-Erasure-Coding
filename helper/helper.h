@@ -12,12 +12,12 @@ char *absolutePath(const char *filename);
 
 off_t fullSize(const char *filename);
 
-int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[4], unsigned char *parity[3], unsigned char buffererror[3]);
+int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[8], unsigned char *parity[3], unsigned char buffererror[3]);
 
 char *fullName(const char *path);
 
 const char *get_filename_ext(const char *filename);
 
-int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[4]);
+int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[8]);
 
 void putParity(char *fileIn, size_t maxSize, unsigned char *buffer[3]);

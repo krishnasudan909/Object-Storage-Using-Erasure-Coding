@@ -29,7 +29,7 @@ off_t fullSize(const char *filename) {
 }
 
 //Merge file
-int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[4], unsigned char *parity[3], unsigned char buffererror[3]){
+int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[8], unsigned char *parity[3], unsigned char buffererror[3]){
     char splitlocation[100];
     FILE *fIn;
     FILE *fOut;
@@ -39,7 +39,7 @@ int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[4], unsign
     sprintf(resultfilelocation, "result/%s", filename);
 
     fOut = fopen(resultfilelocation, "wb");
-    for (int i = 1; i <= 4; i++)
+    for (int i = 1; i <= 8; i++)
     {
         sprintf(splitlocation, "d%d/%s.00%d", i, filename, i);
         // printf("%s\n", splitlocation);
@@ -102,7 +102,7 @@ const char *get_filename_ext(const char *filename) {
 }
 
 //Split file
-int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[4]){
+int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[8]){
     int result = 1;
     FILE *fIn;
     FILE *fOut;
@@ -115,7 +115,7 @@ int splitFile(char *fileIn, size_t maxSize, unsigned char *buffer[4]){
     fileIn = fullName(fileIn);
     fOut = NULL;
     int bufferIndex = 0;
-    while(bufferIndex<4){
+    while(bufferIndex<8){
         sprintf(dirname, "d%d", result);
         if(access(dirname, F_OK) == 0){
         sprintf(filename, "%s/%s.%03d", dirname, fileIn, result);
