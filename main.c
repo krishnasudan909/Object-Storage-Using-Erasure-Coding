@@ -112,30 +112,8 @@ void get() {
     
     if(mergeResult > 0){
       printf("The recovery code starts\n");
-      unsigned char genb[7*4];
-      unsigned char genc[7*4];
-      unsigned char gend[7*4];
-      int i, j, r;
-
-      for (i = 0, r = 0; i < 4; i++, r++){
-        for (j = 0; j < 4; j++)
-          genb[4 * i + j] = gen[4 * r + j];
-      }
-
-      if (gf_invert_matrix(genb, gend, 4) < 0)
-        printf("BD BAD\n");
-
-      // for (i = 0; i < mergeResult; i++)
-		  //   databuffs[buffererror[i]] = 1;
-
-      for (i = 0; i < 3; i++)
-		  for (j = 0; j < 4; j++)
-			  genc[4 * i + j] = gend[4 * buffererror[i] + j];
-
       
-      ec_init_tables(4, mergeResult, genc, g_tbls);
       
-      ec_encode_data_base(maxSize, 4, mergeResult, g_tbls, databuffs, paritybuffs);
       printf("%s\n", databuffs[0]);
       printf("%s\n", databuffs[1]);
       printf("%s\n", databuffs[2]);
