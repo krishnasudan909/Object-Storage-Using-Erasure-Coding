@@ -15,13 +15,80 @@ struct FileData
 
 };
 
+
+
+static int gf_gen_decode_matrix_simple(unsigned char * encode_matrix,
+				       unsigned char * decode_matrix,
+				       unsigned char * invert_matrix,
+				       unsigned char * temp_matrix,
+				       unsigned char * decode_index, unsigned char * frag_err_list, int nerrs, int k,
+				       int m)
+{
+	int i, j, p, r;
+	int nsrcerrs = 0;
+	unsigned char s, *b = temp_matrix;
+	unsigned char frag_in_err[255];
+
+	memset(frag_in_err, 0, sizeof(frag_in_err));
+
+	// Order the fragments in erasure for easier sorting
+	for (i = 0; i < nerrs; i++) {
+		if (frag_err_list[i] < k)
+			nsrcerrs++;
+		frag_in_err[frag_err_list[i]] = 1;
+	}
+
+	// Construct b (matrix that encoded remaining frags) by removing erased rows
+	for (i = 0, r = 0; i < k; i++, r++) {
+		while (frag_in_err[r])
+			r++;
+		for (j = 0; j < k; j++)
+			b[k * i + j] = encode_matrix[k * r + j];
+		decode_index[i] = r;
+	}
+
+	// Invert matrix to get recovery matrix
+	if (gf_invert_matrix(b, invert_matrix, k) < 0)
+		return -1;
+
+	// Get decode matrix with only wanted recovery rows
+	for (i = 0; i < nerrs; i++) {
+		if (frag_err_list[i] < k)	// A src err
+			for (j = 0; j < k; j++)
+				decode_matrix[k * i + j] =
+				    invert_matrix[k * frag_err_list[i] + j];
+	}
+
+	// For non-src (parity) erasures need to multiply encode matrix * invert
+	for (p = 0; p < nerrs; p++) {
+		if (frag_err_list[p] >= k) {	// A parity err
+			for (i = 0; i < k; i++) {
+				s = 0;
+				for (j = 0; j < k; j++)
+					s ^= gf_mul(invert_matrix[j * k + i],
+						    encode_matrix[k * frag_err_list[p] + j]);
+				decode_matrix[k * p + i] = s;
+			}
+		}
+	}
+	return 0;
+}
+
 ///////////
-int d = 8;
+int k = 8;
 int p = 3;
 int m = 11;
 
-unsigned char gen[11*8];
-char g_tbls[3 * 8 * 32];
+  unsigned char *frag_ptrs[255];
+	unsigned char *recover_srcs[255];
+	unsigned char *recover_outp[255];
+	unsigned char frag_err_list[255];
+
+	// Coefficient matrices
+	unsigned char *encode_matrix, *decode_matrix;
+	unsigned char *invert_matrix, *temp_matrix;
+	unsigned char *g_tbls;
+	unsigned char decode_index[255];
 
 
 // Global Hashable with it's starting id
@@ -45,24 +112,28 @@ void put(int hashIndex) {
 
 
     size_t maxSize = ceil((double)fullSize(path)/8);
-    unsigned char *databuffs[8];
     
-    for (size_t i = 0; i < 8; i++)
-    {
-      databuffs[i] = (char*)malloc(maxSize * sizeof(char));
-    }
     
-    unsigned char* paritybuffs[3];
-    for (size_t i = 0; i < 4; i++)
-    {
-      paritybuffs[i] = (char*)malloc(maxSize * sizeof(char));
-    }
 
-    printf("The file has been split to %d parts with maximum size as %zu\n", splitFile(path, maxSize, databuffs), maxSize);
+    for (int i = 0; i < m; i++) {
+		if (NULL == (frag_ptrs[i] = malloc(maxSize))) {
+			printf("alloc error: Fail\n");
+			return -1;
+		}
+	}
 
-    ec_encode_data_base(maxSize, 4, 3, g_tbls, databuffs, paritybuffs);
+    printf("The file has been split to %d parts with maximum size as %zu\n", splitFile(path, maxSize, frag_ptrs), maxSize);
 
-    putParity(fullName(path), maxSize, paritybuffs);
+    gf_gen_cauchy1_matrix(encode_matrix, m, k);
+
+	// Initialize g_tbls from encode matrix
+	  ec_init_tables(k, p, &encode_matrix[k * k], g_tbls);
+
+	// Generate EC parity blocks from sources
+	  ec_encode_data(maxSize, k, p, g_tbls, frag_ptrs, &frag_ptrs[k]);
+
+
+    putParity(fullName(path), maxSize, &frag_ptrs[k]);
     printf("The parities have been put into respective folders\n");
   
 
@@ -101,39 +172,36 @@ void get() {
     }
     
     unsigned char* paritybuffs[3];
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < 3; i++)
     {
       paritybuffs[i] = (char*)malloc(maxSize * sizeof(char));
     }
 
-    unsigned char buffererror[3];
+    int buffererror[8];
 
     int mergeResult = mergeFile(current->file_name, maxSize, databuffs, paritybuffs, buffererror);
     
     if(mergeResult > 0){
+      int i,j,r;
       printf("The recovery code starts\n");
-      
-      
-      printf("%s\n", databuffs[0]);
-      printf("%s\n", databuffs[1]);
-      printf("%s\n", databuffs[2]);
-      printf("%s\n", databuffs[3]);
-      printf("\nThe parity starts here: \n");
-      printf("%s\n", paritybuffs[0]);
-      printf("%s\n", paritybuffs[1]);
-      printf("%s\n", paritybuffs[2]);
-    }
-    // else if (mergeResult == 0)
-    // {
-    //   printf("%s", databuffs[0]);
-    //   printf("%s", databuffs[1]);
-    //   printf("%s", databuffs[2]);
-    //   printf("%s", databuffs[3]);
+      // unsigned char genB[11*8], genC[11*8], genD[11*8];
+      // unsigned char *recov[11];
+      // for (size_t i = 0; i < 11; i++)
+      // {
+      //   recov[i] = (char*)malloc(maxSize * sizeof(char));
+      // }
+      // for (i = 0, r = 0; i < 8; i++, r++) {
+      //   while(buffererror[r] == 1)
+      //     r++;
+      //   recov[i] = databuffs[r];
+      //   for (j = 0; j < 8; j++)
+      //     genB[8 * i + j] = gen[8 * r + j];
+      // }
 
-    //   printf("%s", paritybuffs[0]);
-    //   printf("%s", paritybuffs[1]);
-    //   printf("%s", paritybuffs[2]);
-    // }
+      // gf_invert_matrix(genB, genD, 8);
+      
+      
+    }
     
     
     return;
@@ -182,10 +250,11 @@ int main(int argc, char const *argv[])
   }
   mkdir("result",0777);
 
-  
-
-  gf_gen_rs_matrix(gen, 7, 4);
-  ec_init_tables(4, 3, &gen[4*4], g_tbls);
+  encode_matrix = malloc(m * k);
+	decode_matrix = malloc(m * k);
+	invert_matrix = malloc(m * k);
+	temp_matrix = malloc(m * k);
+	g_tbls = malloc(k * p * 32);
 
     //INITIALIZING MAP ARRAY TO NULL
     for(int i=0; i<mapSize; i++) hashTable[i]=NULL;
