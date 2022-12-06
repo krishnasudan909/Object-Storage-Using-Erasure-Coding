@@ -79,6 +79,8 @@ int k = 8;
 int p = 3;
 int m = 11;
 
+int nerrs = 0;
+
   unsigned char *frag_ptrs[255];
 	unsigned char *recover_srcs[255];
 	unsigned char *recover_outp[255];
@@ -163,45 +165,44 @@ void get() {
     printf("The type of the file is: %s\n", current->file_type);
 
 
-    size_t maxSize = ceil((double)current->file_size/8);
-    unsigned char *databuffs[8];
-    
-    for (size_t i = 0; i < 8; i++)
-    {
-      databuffs[i] = (char*)malloc(maxSize * sizeof(char));
-    }
-    
-    unsigned char* paritybuffs[3];
-    for (size_t i = 0; i < 3; i++)
-    {
-      paritybuffs[i] = (char*)malloc(maxSize * sizeof(char));
-    }
+  size_t maxSize = ceil((double)current->file_size/8);
+     
 
     int buffererror[8];
 
-    int mergeResult = mergeFile(current->file_name, maxSize, databuffs, paritybuffs, buffererror);
+    // int mergeResult = mergeFile(current->file_name, maxSize, databuffs, paritybuffs, buffererror);
     
-    if(mergeResult > 0){
-      int i,j,r;
-      printf("The recovery code starts\n");
-      // unsigned char genB[11*8], genC[11*8], genD[11*8];
-      // unsigned char *recov[11];
-      // for (size_t i = 0; i < 11; i++)
-      // {
-      //   recov[i] = (char*)malloc(maxSize * sizeof(char));
-      // }
-      // for (i = 0, r = 0; i < 8; i++, r++) {
-      //   while(buffererror[r] == 1)
-      //     r++;
-      //   recov[i] = databuffs[r];
-      //   for (j = 0; j < 8; j++)
-      //     genB[8 * i + j] = gen[8 * r + j];
-      // }
+    frag_err_list[nerrs++] = 2;
+    frag_err_list[nerrs++] = 4;
+    frag_err_list[nerrs++] = 6;
 
-      // gf_invert_matrix(genB, genD, 8);
-      
-      
+
+    // Allocate buffers for recovered data
+	for (int i = 0; i < p; i++) {
+		if (NULL == (recover_outp[i] = malloc(maxSize))) {
+			printf("alloc error: Fail\n");
+			return -1;
+		}
+	}
+
+    if (nerrs <= 0)
+		  return 0;
+
+    gf_gen_decode_matrix_simple(encode_matrix, decode_matrix,
+					  invert_matrix, temp_matrix, decode_index,
+					  frag_err_list, nerrs, k, m);
+
+    for (int i = 0; i < k; i++)
+		  recover_srcs[i] = frag_ptrs[decode_index[i]];
+
+    ec_init_tables(k, nerrs, decode_matrix, g_tbls);
+	  ec_encode_data(maxSize, k, nerrs, g_tbls, recover_srcs, recover_outp);
+
+    for (int i = 0; i < nerrs; i++)
+    {
+      printf("%s\n", recover_outp[i]);
     }
+    
     
     
     return;
@@ -255,6 +256,10 @@ int main(int argc, char const *argv[])
 	invert_matrix = malloc(m * k);
 	temp_matrix = malloc(m * k);
 	g_tbls = malloc(k * p * 32);
+
+  
+
+	
 
     //INITIALIZING MAP ARRAY TO NULL
     for(int i=0; i<mapSize; i++) hashTable[i]=NULL;
