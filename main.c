@@ -176,13 +176,13 @@ void get() {
     }
     
 
-    nerrs = mergeFile(current->file_name, maxSize, databuffs, frag_err_list);
-    printf("--DATA BEFORE--\n");
-    for (int i = 0; i < 8; i++)
-    {
-      printf("%s\n", databuffs[i]);
-    }
-    printf("----\n");
+    nerrs = getsplits(current->file_name, maxSize, databuffs, frag_err_list);
+    // printf("--DATA BEFORE--\n");
+    // for (int i = 0; i < 8; i++)
+    // {
+    //   printf("%s\n", databuffs[i]);
+    // }
+    // printf("----\n");
     
 
 
@@ -194,26 +194,55 @@ void get() {
 		}
 	}
 
-    if (nerrs <= 0)
-		  return;
+    if (nerrs > 0)
+  {    
+      gf_gen_decode_matrix_simple(encode_matrix, decode_matrix,
+              invert_matrix, temp_matrix, decode_index,
+              frag_err_list, nerrs, k, m);
 
-    gf_gen_decode_matrix_simple(encode_matrix, decode_matrix,
-					  invert_matrix, temp_matrix, decode_index,
-					  frag_err_list, nerrs, k, m);
+      for (int i = 0; i < k; i++)
+        recover_srcs[i] = frag_ptrs[decode_index[i]];
 
-    for (int i = 0; i < k; i++)
-		  recover_srcs[i] = frag_ptrs[decode_index[i]];
+      ec_init_tables(k, nerrs, decode_matrix, g_tbls);
+      ec_encode_data(maxSize, k, nerrs, g_tbls, recover_srcs, recover_outp);
 
-    ec_init_tables(k, nerrs, decode_matrix, g_tbls);
-	  ec_encode_data(maxSize, k, nerrs, g_tbls, recover_srcs, recover_outp);
+      // printf("--DATA RECOVERED--\n");
+      // for (int i = 0; i < nerrs; i++)
+      // {
+      //   printf("%s\n", recover_outp[i]);
+      // }
+      // printf("------\n");
 
-    printf("--DATA RECOVERED--\n");
-    for (int i = 0; i < nerrs; i++)
+      char recoveredDirName[3];
+      char filename[50];
+      FILE *fOut = NULL;
+      for (int i = 0; i < nerrs; i++)
+      {
+        sprintf(recoveredDirName, "d%d", frag_err_list[i]+1);
+        mkdir(recoveredDirName, 0777);
+        sprintf(filename, "%s/%s.%03d", recoveredDirName, current->file_name, frag_err_list[i]+1);
+        fOut = fopen(filename, "wb");
+        fwrite(recover_outp[i], maxSize, 1, fOut );
+        fclose(fOut);
+
+      }
+      
+
+      for (int i = 0; i < nerrs; i++)
+      {
+        databuffs[frag_err_list[i]] = recover_outp[i];
+      }
+  }
+    char resultfile[50];
+    FILE *fOut = NULL;
+    // putResult(current->file_name, maxSize,databuffs);
+    sprintf(resultfile, "result/%s", current->file_name);
+    fOut = fopen(resultfile, "wb");
+    for (int i = 0; i < 8; i++)
     {
-      printf("%s\n", recover_outp[i]);
+      fwrite(databuffs[i], maxSize, 1, fOut);
     }
-    printf("------\n");
-    
+    fclose(fOut);
     
     
     return;
