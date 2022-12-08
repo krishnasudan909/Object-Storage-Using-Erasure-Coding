@@ -29,7 +29,7 @@ off_t fullSize(const char *filename) {
 }
 
 //Merge file
-int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[8], unsigned char * frag_err_list){
+int getsplits(char *filename, size_t splitSize, unsigned char *buffer[8], unsigned char * frag_err_list){
     char splitlocation[100];
     FILE *fIn;
     int boolflag = 0;
