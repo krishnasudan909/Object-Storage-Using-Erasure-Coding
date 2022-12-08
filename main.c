@@ -120,7 +120,7 @@ void put(int hashIndex) {
     for (int i = 0; i < m; i++) {
 		if (NULL == (frag_ptrs[i] = malloc(maxSize))) {
 			printf("alloc error: Fail\n");
-			return -1;
+			return;
 		}
 	}
 
@@ -168,25 +168,34 @@ void get() {
   size_t maxSize = ceil((double)current->file_size/8);
      
 
-    int buffererror[8];
+    unsigned char* databuffs[8];
 
-    // int mergeResult = mergeFile(current->file_name, maxSize, databuffs, paritybuffs, buffererror);
+    for (int i = 0; i < 8; i++)
+    {
+      databuffs[i] = (char *) malloc(maxSize);
+    }
     
-    frag_err_list[nerrs++] = 2;
-    frag_err_list[nerrs++] = 4;
-    frag_err_list[nerrs++] = 6;
+
+    nerrs = mergeFile(current->file_name, maxSize, databuffs, frag_err_list);
+    printf("--DATA BEFORE--\n");
+    for (int i = 0; i < 8; i++)
+    {
+      printf("%s\n", databuffs[i]);
+    }
+    printf("----\n");
+    
 
 
     // Allocate buffers for recovered data
 	for (int i = 0; i < p; i++) {
 		if (NULL == (recover_outp[i] = malloc(maxSize))) {
 			printf("alloc error: Fail\n");
-			return -1;
+			return;
 		}
 	}
 
     if (nerrs <= 0)
-		  return 0;
+		  return;
 
     gf_gen_decode_matrix_simple(encode_matrix, decode_matrix,
 					  invert_matrix, temp_matrix, decode_index,
@@ -198,10 +207,12 @@ void get() {
     ec_init_tables(k, nerrs, decode_matrix, g_tbls);
 	  ec_encode_data(maxSize, k, nerrs, g_tbls, recover_srcs, recover_outp);
 
+    printf("--DATA RECOVERED--\n");
     for (int i = 0; i < nerrs; i++)
     {
       printf("%s\n", recover_outp[i]);
     }
+    printf("------\n");
     
     
     

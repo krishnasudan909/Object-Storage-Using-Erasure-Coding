@@ -29,62 +29,33 @@ off_t fullSize(const char *filename) {
 }
 
 //Merge file
-int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[8], unsigned char *parity[3], int buffererror[8]){
+int mergeFile(char *filename, size_t splitSize, unsigned char *buffer[8], unsigned char * frag_err_list){
     char splitlocation[100];
     FILE *fIn;
-    FILE *fOut;
     int boolflag = 0;
-    char resultfilelocation[100];
     char dirname[3];
-    sprintf(resultfilelocation, "result/%s", filename);
-
-    fOut = fopen(resultfilelocation, "wb");
+    
     for (int i = 1; i <= 8; i++)
     {
         sprintf(splitlocation, "d%d/%s.00%d", i, filename, i);
-        // printf("%s\n", splitlocation);
         if(access(splitlocation, F_OK) == 0){
             fIn = fopen(splitlocation, "rb");
             fread(buffer[i-1], splitSize, 1, fIn);
-            // printf("%s\n", buffer);
-            fwrite(buffer[i-1], splitSize, 1, fOut);
+            // printf("%s\n", buffer[i-1]);
             fclose(fIn);
             fIn = NULL;
         }
         else
         {
             printf("The split at %s has been deleted\n", splitlocation);
-            buffererror[i-1] = 1;
+            frag_err_list[boolflag] = i-1;
             boolflag++;
         }
         
     }
-    for (int i = 1; i <= 3; i++)
-    {
-        sprintf(dirname, "p%d", i);
-        if(access(dirname, F_OK) == 0){
-            sprintf(splitlocation, "%s/%s.%03d", dirname, filename, i);
-            fIn = fopen(splitlocation, "rb");
-            fread(parity[i-1], splitSize, 1, fIn);
-            fclose(fIn);
-            fIn = NULL;
-        }
-        else
-        {
-            printf("The parity folder at %s is deleted.\nAborting..", dirname);
-            return -2;
-        }
-    }
     
-    fclose(fOut);
-    if (boolflag > 0)
-    {
-        remove(resultfilelocation);
-        return boolflag;
-    }
-
-    return 0;
     
+    return boolflag;  
 }
 
 //Name extension
