@@ -168,9 +168,9 @@ void get() {
   size_t maxSize = ceil((double)current->file_size/8);
      
 
-    unsigned char* databuffs[8];
+    unsigned char* databuffs[11];
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 11; i++)
     {
       databuffs[i] = (char *) malloc(maxSize);
     }
@@ -232,6 +232,9 @@ void get() {
       {
         databuffs[frag_err_list[i]] = recover_outp[i];
       }
+
+      ec_encode_data(maxSize, k, p, g_tbls, databuffs, &databuffs[k]);
+      putParity(current->file_name, maxSize, &databuffs[k]);
   }
     char resultfile[50];
     FILE *fOut = NULL;
